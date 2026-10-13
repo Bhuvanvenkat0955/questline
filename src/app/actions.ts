@@ -9,10 +9,18 @@ import { and, eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { db } from "@/db";
 import { checkins, phases, quests } from "@/db/schema";
+import { AiError } from "@/lib/ai";
+import { countQuestsOn, planToday } from "@/lib/dayPlan";
 import { localDate } from "@/lib/progress";
 import { getActiveGoal, getStats } from "@/lib/today";
 
-export type CheckinState = { error?: string } | null;
+export type CheckinState = {
+  /** True once the check-in itself is stored, even if planning then failed. */
+  saved?: boolean;
+  error?: string;
+  /** Set when saving the check-in also planned the day. */
+  planned?: { worldCleared: boolean; nextWorld: string | null };
+} | null;
 
 const ENERGY = ["low", "ok", "high"] as const;
 
@@ -30,9 +38,9 @@ export async function saveCheckin(_prev: CheckinState, form: FormData): Promise<
   }
   if (!energy) return { error: "Pick how much energy you have today." };
 
-  const values = { goalId: goal.id, date: localDate(), minutesAvailable: minutes, energy, note };
+  const today = localDate();
   db.insert(checkins)
-    .values(values)
+    .values({ goalId: goal.id, date: today, minutesAvailable: minutes, energy, note })
     // Already checked in today? Replace the answers instead of adding a second row.
     .onConflictDoUpdate({
       target: [checkins.goalId, checkins.date],
@@ -40,9 +48,40 @@ export async function saveCheckin(_prev: CheckinState, form: FormData): Promise<
     })
     .run();
 
+  // First check-in of the day: ask the AI to plan today's quests right away.
+  // (Editing the check-in later keeps the plan you already have.)
+  let result: CheckinState = { saved: true };
+  if (countQuestsOn(goal.id, today) === 0) {
+    try {
+      result = { saved: true, planned: await planToday(goal, today) };
+    } catch (error) {
+      result = { saved: true, error: `Check-in saved, but planning failed: ${messageOf(error)}` };
+    }
+  }
+
   // Re-render the page with the fresh data from the database.
   refresh();
-  return null;
+  return result;
+}
+
+/** Plans today's quests again, e.g. after planning failed. */
+export async function planTodayAction(): Promise<CheckinState> {
+  const goal = getActiveGoal();
+  if (!goal) return { error: "There's no goal yet." };
+  try {
+    const planned = await planToday(goal, localDate());
+    refresh();
+    return { planned };
+  } catch (error) {
+    return { error: messageOf(error) };
+  }
+}
+
+/** Only our own AI errors have messages meant for the screen. */
+function messageOf(error: unknown) {
+  if (error instanceof AiError) return error.message;
+  console.error(error);
+  return "Something went wrong. Try again.";
 }
 
 export type QuestResult = { xpGained: number; level: number; leveledUp: boolean };
@@ -67,7 +106,8 @@ export async function setQuestStatus(questId: number, status: "done" | "todo" | 
   const before = getStats(goal.id, today);
 
   db.update(quests)
-    .set({ status, completedOn: status === "done" ? today : null })
+    // Feedback only makes sense for finished quests, so un-ticking clears it.
+    .set(status === "done" ? { status, completedOn: today } : { status, completedOn: null, feedback: null })
     .where(eq(quests.id, questId))
     .run();
 
@@ -78,4 +118,23 @@ export async function setQuestStatus(questId: number, status: "done" | "todo" | 
     level: after.level,
     leveledUp: after.level > before.level,
   };
+}
+
+const FEEDBACK = ["too_easy", "just_right", "too_hard"] as const;
+
+/** Saves how a finished quest felt, so tomorrow's plan can adjust. */
+export async function setQuestFeedback(questId: number, feedback: (typeof FEEDBACK)[number]) {
+  const goal = getActiveGoal();
+  if (!goal || !Number.isInteger(questId) || !FEEDBACK.includes(feedback)) throw new Error("Invalid feedback.");
+
+  const owned = db
+    .select({ id: quests.id })
+    .from(quests)
+    .innerJoin(phases, eq(quests.phaseId, phases.id))
+    .where(and(eq(quests.id, questId), eq(phases.goalId, goal.id), eq(quests.status, "done")))
+    .get();
+  if (!owned) throw new Error("Quest not found.");
+
+  db.update(quests).set({ feedback }).where(eq(quests.id, questId)).run();
+  refresh();
 }

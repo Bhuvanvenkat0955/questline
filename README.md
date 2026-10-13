@@ -36,6 +36,7 @@ your own computer and is never uploaded anywhere.
 | `npm run db:seed` | Add the sample goal (`-- --reset` wipes your data first) |
 | `npm run db:studio` | Browse your database in the browser |
 | `npm run db:generate` | Create a migration after changing `src/db/schema.ts` |
+| `npm run db:migrate` | Apply new migrations to your database (also happens on app start) |
 
 ## AI planning: bring your own AI *(coming soon)*
 

@@ -7,6 +7,7 @@
 import clsx from "clsx";
 import { BatteryFull, BatteryLow, BatteryMedium, Pencil } from "pixelarticons/react";
 import { useActionState, useState } from "react";
+import { toast } from "sonner";
 import { saveCheckin, type CheckinState } from "@/app/actions";
 import { PixelButton } from "@/components/ui/PixelButton";
 import type { Checkin } from "@/db/schema";
@@ -67,11 +68,19 @@ function CheckinForm({
 }: CheckinPanelProps & { onSaved: () => void; onCancel?: () => void }) {
   const [minutes, setMinutes] = useState(checkin?.minutesAvailable ?? defaultMinutes);
 
+  // The first check-in of the day also asks the AI to plan, which can take a while.
+  const willPlan = !checkin;
+
   // useActionState runs the Server Action and keeps its result (an error
   // message or null) plus a `pending` flag while it's saving.
   const [state, formAction, pending] = useActionState(async (prev: CheckinState, form: FormData) => {
     const result = await saveCheckin(prev, form);
-    if (!result?.error) onSaved();
+    if (result?.planned) announcePlan(result.planned);
+    if (result?.saved) {
+      // Planning can fail after a successful save. The form closes, so show it as a pop-up.
+      if (result.error) toast.error(result.error);
+      onSaved();
+    }
     return result;
   }, null);
 
@@ -156,16 +165,21 @@ function CheckinForm({
         />
       </label>
 
-      {state?.error && (
+      {state?.error && !state.saved && (
         <p role="alert" className="text-sm text-red">
           {state.error}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <PixelButton type="submit" color="green" size="lg" disabled={pending}>
-          {pending ? "Saving..." : checkin ? "Save changes" : "Start the day"}
+          {pending ? (willPlan ? "Planning your day..." : "Saving...") : checkin ? "Save changes" : "Start the day"}
         </PixelButton>
+        {pending && willPlan && (
+          <p role="status" className="text-sm text-text-dim">
+            Claude is planning today&apos;s quests. This can take up to a minute.
+          </p>
+        )}
         {onCancel && (
           <PixelButton color="dark" size="lg" onClick={onCancel}>
             Cancel
@@ -174,4 +188,13 @@ function CheckinForm({
       </div>
     </form>
   );
+}
+
+/** Pop-ups after the AI plans a day: a world clear deserves its own celebration. */
+export function announcePlan(planned: { worldCleared: boolean; nextWorld: string | null }) {
+  if (planned.worldCleared) {
+    toast.success(planned.nextWorld ? `World cleared! On to ${planned.nextWorld}` : "Final world cleared!");
+  } else {
+    toast("Today's quests are ready");
+  }
 }

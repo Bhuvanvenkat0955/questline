@@ -9,7 +9,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { Check, Clock, Forward, Undo, Zap } from "pixelarticons/react";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { setQuestStatus } from "@/app/actions";
+import { setQuestFeedback, setQuestStatus } from "@/app/actions";
 import { accentBg, accentOn, accentText } from "@/components/ui/accents";
 import type { Quest } from "@/db/schema";
 import { questTypeStyle } from "./questTypes";
@@ -106,6 +106,7 @@ export function QuestCard({ quest, xp, missedFrom }: QuestCardProps) {
 
         <h3 className={clsx("mt-2 text-base font-bold", done && "text-text-dim line-through")}>{quest.title}</h3>
         {quest.instructions && <p className="mt-1 text-sm text-text-dim">{quest.instructions}</p>}
+        {done && <FeedbackButtons questId={quest.id} feedback={quest.feedback} />}
       </div>
 
       {!done && (
@@ -126,5 +127,50 @@ export function QuestCard({ quest, xp, missedFrom }: QuestCardProps) {
         </button>
       )}
     </article>
+  );
+}
+
+const feedbackOptions = [
+  { value: "too_easy", label: "Too easy" },
+  { value: "just_right", label: "Just right" },
+  { value: "too_hard", label: "Too hard" },
+] as const;
+
+/** "How was it?" buttons on a finished quest. The AI reads the answer tomorrow. */
+function FeedbackButtons({ questId, feedback }: { questId: number; feedback: Quest["feedback"] }) {
+  const [selected, setSelected] = useOptimistic(feedback);
+  const [, startTransition] = useTransition();
+
+  function choose(value: NonNullable<Quest["feedback"]>) {
+    startTransition(async () => {
+      setSelected(value);
+      try {
+        await setQuestFeedback(questId, value);
+      } catch {
+        toast.error("Couldn't save that. Try again.");
+      }
+    });
+  }
+
+  return (
+    <div role="group" aria-label="How was this quest?" className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-text-dim">How was it?</span>
+      {feedbackOptions.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={selected === option.value}
+          onClick={() => choose(option.value)}
+          className={clsx(
+            "h-7 cursor-pointer border-2 px-2 focus-visible:outline-2 focus-visible:outline-yellow",
+            selected === option.value
+              ? "border-ink bg-cyan text-ink"
+              : "border-line text-text-dim hover:border-text-dim hover:text-text",
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }

@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { Checkbox, Crown, Fire, Trophy, Zap } from "pixelarticons/react";
+import { Checkbox, Crown, Fire, Message, Trophy, Zap } from "pixelarticons/react";
 import { CheckinPanel } from "@/components/today/CheckinPanel";
+import { PlanTodayButton } from "@/components/today/PlanTodayButton";
 import { QuestCard } from "@/components/today/QuestCard";
 import { StatTile } from "@/components/ui/StatTile";
 import { XPBar } from "@/components/ui/XPBar";
@@ -91,6 +93,16 @@ function TodayQuests({ view, today }: { view: TodayView; today: string }) {
         )}
       </div>
 
+      {view.checkin?.planNote && (
+        <p className="flex gap-3 border-2 border-line bg-panel-raised p-4 text-sm">
+          <Message className="size-5 shrink-0 text-cyan" aria-hidden="true" />
+          <span>
+            <span className="font-display text-xs text-cyan uppercase">Coach · </span>
+            {view.checkin.planNote}
+          </span>
+        </p>
+      )}
+
       {allDone && (
         <div className="flex items-center gap-4 border-[3px] border-ink bg-yellow p-4 text-ink shadow-pixel [--shadow-color:var(--yellow-deep)]">
           <Trophy className="size-9 shrink-0" />
@@ -102,9 +114,7 @@ function TodayQuests({ view, today }: { view: TodayView; today: string }) {
       )}
 
       {quests.length === 0 ? (
-        <p className="border-2 border-dashed border-line p-6 text-sm text-text-dim">
-          No quests are planned for today yet. Automatic planning from your check-in is coming in a later update.
-        </p>
+        <PlanTodayButton />
       ) : (
         quests.map((q) => (
           <QuestCard key={q.id} quest={q} xp={questXp(q)} missedFrom={q.date < today ? dayLabel(q.date, today) : undefined} />
@@ -133,9 +143,14 @@ function NoGoal() {
     <section className="mx-6 my-10 max-w-xl border-2 border-line bg-panel p-6 sm:mx-10">
       <h1 className="font-display text-2xl text-yellow uppercase">No quest line yet</h1>
       <p className="mt-3 text-sm text-text-dim">
-        Creating your own goal is coming soon. For now, load the sample goal by running{" "}
-        <code className="bg-ink px-1.5 py-0.5 text-text">npm run db:seed</code> and refresh this page.
+        Tell Questline what you want to achieve and Claude will map it out as worlds to clear.
       </p>
+      <Link
+        href="/goals/new"
+        className="mt-5 inline-flex h-11 items-center border-[3px] border-ink bg-green px-5 font-display text-sm text-ink uppercase shadow-pixel [--shadow-color:var(--green-deep)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-yellow"
+      >
+        Start a quest line
+      </Link>
     </section>
   );
 }

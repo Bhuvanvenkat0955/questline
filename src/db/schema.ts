@@ -16,6 +16,8 @@ export const goals = sqliteTable("goals", {
   id: integer().primaryKey({ autoIncrement: true }),
   title: text().notNull(),
   description: text(),
+  /** Where the user is starting from, in their own words. The AI plans from it. */
+  startingPoint: text(),
   /** Usual minutes per day. A day's check-in can override it. */
   dailyMinutes: integer().notNull().default(30),
   targetDate: text(),
@@ -89,6 +91,8 @@ export const checkins = sqliteTable(
     energy: text({ enum: ["low", "ok", "high"] }).notNull(),
     /** Anything else that matters today, e.g. "travelling", "exam tomorrow". */
     note: text(),
+    /** The AI's short message explaining today's plan. */
+    planNote: text(),
   },
   (t) => [uniqueIndex("checkins_goal_date").on(t.goalId, t.date)],
 );

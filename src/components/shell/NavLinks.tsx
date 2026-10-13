@@ -6,11 +6,12 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Checkbox, Map } from "pixelarticons/react";
+import { Checkbox, Map, Plus } from "pixelarticons/react";
 
 const links = [
   { href: "/", label: "Today", icon: <Checkbox /> },
   { href: "/roadmap", label: "Roadmap", icon: <Map /> },
+  { href: "/goals/new", label: "New goal", icon: <Plus /> },
 ];
 
 export function NavLinks() {
