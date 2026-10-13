@@ -8,7 +8,7 @@ that fit that day's circumstances.
 - [x] **Step 1 — Project setup:** Next.js + Tailwind, libraries, pixel fonts, palette
 - [x] **Step 2 — Pixel components:** PixelButton, PixelCard, StatTile, XPBar, `/kit` showcase
 - [x] **Step 3 — Database:** SQLite tables (goals, worlds, daily quests, check-ins), XP/level/streak rules, test seed data
-- [ ] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
+- [x] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
 - [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, worlds map with past quests, edit worlds
 - [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
@@ -66,6 +66,7 @@ DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [
 src/
   app/
     page.tsx              # Today screen
+    actions.ts            # Server Actions: save check-in, tick/skip quests
     goals/new/page.tsx    # New goal + roadmap preview
     roadmap/page.tsx      # Roadmap view/edit
     progress/page.tsx     # Streak + heatmap
@@ -75,9 +76,12 @@ src/
     index.ts              # SQLite connection, runs migrations on startup
     seed.ts               # test data: one goal, a few days of quests
   lib/
-    progress.ts           # streak / % calculations
+    progress.ts           # XP / level / streak rules (pure math)
+    today.ts              # reads everything the Today screen shows
     ai.ts                 # runs `claude -p`, prompts + JSON schemas (only file that knows how AI is called)
-  components/             # TaskCard, Checklist, PhaseList, Heatmap...
+  components/
+    ui/                   # PixelButton, PixelCard, StatTile, XPBar
+    today/                # CheckinPanel, QuestCard, quest type styles
 drizzle/                  # generated SQL migrations (committed)
 data/app.db               # local database (gitignored)
 ```

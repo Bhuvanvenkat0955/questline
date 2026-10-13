@@ -15,7 +15,7 @@ import * as schema from "./schema";
 const DB_FILE = path.join(process.cwd(), "data", "app.db");
 const MIGRATIONS_DIR = path.join(process.cwd(), "drizzle");
 
-function openDatabase() {
+function openConnection() {
   fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
 
   const sqlite = new Database(DB_FILE);
@@ -23,16 +23,18 @@ function openDatabase() {
   // deleting a goal also delete its phases, quests and check-ins.
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
-
-  const db = drizzle({ client: sqlite, schema, casing: "snake_case" });
-  migrate(db, { migrationsFolder: MIGRATIONS_DIR });
-  return db;
+  return sqlite;
 }
 
-// `next dev` re-runs this file every time you save a change. Keeping the
+// `next dev` re-runs this file every time you save a change. Keeping the raw
 // connection on globalThis stops each reload from opening another one.
-const globalForDb = globalThis as unknown as { questlineDb?: ReturnType<typeof openDatabase> };
+// The Drizzle wrapper below is rebuilt on every reload instead, so it always
+// knows the latest schema.ts (a kept wrapper would remember old columns).
+const globalForDb = globalThis as unknown as { questlineSqlite?: Database.Database };
+const sqlite = globalForDb.questlineSqlite ?? openConnection();
+if (process.env.NODE_ENV !== "production") globalForDb.questlineSqlite = sqlite;
 
-export const db = globalForDb.questlineDb ?? openDatabase();
+export const db = drizzle({ client: sqlite, schema, casing: "snake_case" });
 
-if (process.env.NODE_ENV !== "production") globalForDb.questlineDb = db;
+// Applies any new migrations. Already-applied ones are skipped, so this is cheap.
+migrate(db, { migrationsFolder: MIGRATIONS_DIR });
