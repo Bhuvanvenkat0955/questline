@@ -33,12 +33,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           toastOptions={{
             unstyled: true,
             classNames: {
-              toast:
-                "flex w-full items-center gap-3 border-[3px] border-ink bg-yellow px-4 py-3 text-ink shadow-pixel [--shadow-color:var(--yellow-deep)]",
+              // Sonner marks each toast with data-type="success" / "error", so the
+              // color is picked from that instead of stacking two background classes.
+              toast: [
+                "flex w-full items-center gap-3 border-[3px] border-ink px-4 py-3 text-ink shadow-pixel",
+                "bg-yellow [--shadow-color:var(--yellow-deep)]",
+                "data-[type=success]:bg-green data-[type=success]:[--shadow-color:var(--green-deep)]",
+                "data-[type=error]:bg-red data-[type=error]:text-cream data-[type=error]:[--shadow-color:var(--red-deep)]",
+              ].join(" "),
               title: "font-display text-sm uppercase",
               description: "text-xs",
-              success: "bg-green [--shadow-color:var(--green-deep)]",
-              error: "bg-red text-cream [--shadow-color:var(--red-deep)]",
             },
           }}
         />

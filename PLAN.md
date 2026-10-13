@@ -9,7 +9,7 @@ that fit that day's circumstances.
 - [x] **Step 2 — Pixel components:** PixelButton, PixelCard, StatTile, XPBar, `/kit` showcase
 - [x] **Step 3 — Database:** SQLite tables (goals, worlds, daily quests, check-ins), XP/level/streak rules, test seed data
 - [x] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
-- [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, worlds map with past quests, edit worlds
+- [x] **Step 5 — App shell + Roadmap screen:** sidebar nav + player card, worlds map with quest logs, edit / add / reorder / delete / clear worlds
 - [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
 - [ ] **Step 8 — Public release:** bring-your-own-AI providers in Settings, manual planning for no-AI users, setup guide in README
@@ -65,12 +65,17 @@ DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [
 ```
 src/
   app/
-    page.tsx              # Today screen
+    layout.tsx            # fonts, pop-up toasts (wraps everything)
     actions.ts            # Server Actions: save check-in, tick/skip quests
-    goals/new/page.tsx    # New goal + roadmap preview
-    roadmap/page.tsx      # Roadmap view/edit
-    progress/page.tsx     # Streak + heatmap
-    settings/page.tsx
+    kit/                  # component showcase (no sidebar)
+    (app)/                # route group: every real screen, shares the sidebar
+      layout.tsx          # sidebar + page area
+      page.tsx            # Today screen  (/)
+      roadmap/page.tsx    # Roadmap screen (/roadmap)
+      roadmap/actions.ts  # Server Actions: edit / add / move / delete / clear worlds
+      goals/new/page.tsx  # New goal + AI worlds preview (step 6)
+      progress/page.tsx   # Streak + heatmap (step 7)
+      settings/page.tsx   # (step 8)
   db/
     schema.ts             # Drizzle tables
     index.ts              # SQLite connection, runs migrations on startup
@@ -78,10 +83,13 @@ src/
   lib/
     progress.ts           # XP / level / streak rules (pure math)
     today.ts              # reads everything the Today screen shows
+    roadmap.ts            # reads worlds + quest logs for the Roadmap
     ai.ts                 # runs `claude -p`, prompts + JSON schemas (only file that knows how AI is called)
   components/
     ui/                   # PixelButton, PixelCard, StatTile, XPBar
     today/                # CheckinPanel, QuestCard, quest type styles
+    roadmap/              # WorldCard, WorldForm, AddWorld, QuestLog
+    shell/                # Sidebar, NavLinks
 drizzle/                  # generated SQL migrations (committed)
 data/app.db               # local database (gitignored)
 ```
@@ -103,7 +111,7 @@ Reference: "Blockcraft"-style retro pixel look.
 | Dialogs, menus, tooltips (accessible primitives) | base-ui |
 | Shared app state (XP, level, today's tasks) | zustand |
 | Pixel button/card variants (red/cyan/yellow…) | cva + clsx |
-| Reordering worlds / today's quests | dnd kit |
+| Reordering worlds / today's quests | ↑/↓ buttons for now (keyboard-friendly); dnd kit later if needed |
 | Progress page charts | recharts |
 | Pixel fonts + pixel icons *(not on curated list)* | Google Fonts pixel font + pixelarticons |
 

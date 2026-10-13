@@ -51,6 +51,14 @@ export function addDays(day: string, amount: number): string {
   return localDate(new Date(y, m - 1, d + amount));
 }
 
+/** "today", "yesterday" or a short date like "Oct 11", for labelling a "YYYY-MM-DD" day. */
+export function dayLabel(day: string, today = localDate()): string {
+  if (day === today) return "today";
+  if (day === addDays(today, -1)) return "yesterday";
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 /**
  * Days in a row with at least one finished quest, counting back from today.
  * Today not done yet doesn't break the streak: it still counts up to

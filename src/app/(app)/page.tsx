@@ -5,7 +5,7 @@ import { CheckinPanel } from "@/components/today/CheckinPanel";
 import { QuestCard } from "@/components/today/QuestCard";
 import { StatTile } from "@/components/ui/StatTile";
 import { XPBar } from "@/components/ui/XPBar";
-import { addDays, localDate, questXp } from "@/lib/progress";
+import { dayLabel, localDate, questXp } from "@/lib/progress";
 import { getTodayView, type TodayView } from "@/lib/today";
 
 // The Today screen: the home page of Questline.
@@ -14,9 +14,6 @@ import { getTodayView, type TodayView } from "@/lib/today";
 export default function TodayPage() {
   return (
     <main className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b-4 border-line px-6 py-4 sm:px-10">
-        <span className="font-display text-lg uppercase">Questline</span>
-      </header>
       <Suspense fallback={<p className="px-6 py-10 text-text-dim sm:px-10">Loading today...</p>}>
         <Today />
       </Suspense>
@@ -129,13 +126,6 @@ function MissedQuests({ view, today }: { view: TodayView; today: string }) {
       ))}
     </section>
   );
-}
-
-/** "yesterday" or a short date like "Oct 11", for labelling quests from earlier days. */
-function dayLabel(date: string, today: string) {
-  if (date === addDays(today, -1)) return "yesterday";
-  const [y, m, d] = date.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function NoGoal() {
