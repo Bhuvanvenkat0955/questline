@@ -84,6 +84,9 @@ Plan by hand: add worlds on the **Roadmap** and add your own quests on
 - **"npm.ps1 cannot be loaded because running scripts is disabled" (Windows PowerShell):**
   use `npm.cmd` instead of `npm` (e.g. `npm.cmd run dev`), or allow local
   scripts with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- **`npm install` tries to compile better-sqlite3 ("gyp ERR! find VS"):** the
+  repo's `.npmrc` prevents this by skipping install scripts (the package ships
+  ready-made binaries). If you see it anyway, run `npm install --ignore-scripts`.
 - **"Claude Code isn't logged in":** run `claude auth login`, then try again.
 - **"Couldn't reach Ollama":** start the Ollama app, or check the address in Settings.
 - **Planning failed after check-in:** your check-in is still saved. Press
