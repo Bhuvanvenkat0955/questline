@@ -12,6 +12,7 @@ import { checkins, phases, quests } from "@/db/schema";
 import { AiError } from "@/lib/ai";
 import { countQuestsOn, planToday } from "@/lib/dayPlan";
 import { localDate } from "@/lib/progress";
+import { aiEnabled } from "@/lib/settings";
 import { getActiveGoal, getStats } from "@/lib/today";
 
 export type CheckinState = {
@@ -51,7 +52,7 @@ export async function saveCheckin(_prev: CheckinState, form: FormData): Promise<
   // First check-in of the day: ask the AI to plan today's quests right away.
   // (Editing the check-in later keeps the plan you already have.)
   let result: CheckinState = { saved: true };
-  if (countQuestsOn(goal.id, today) === 0) {
+  if (aiEnabled() && countQuestsOn(goal.id, today) === 0) {
     try {
       result = { saved: true, planned: await planToday(goal, today) };
     } catch (error) {
@@ -137,4 +138,37 @@ export async function setQuestFeedback(questId: number, feedback: (typeof FEEDBA
 
   db.update(quests).set({ feedback }).where(eq(quests.id, questId)).run();
   refresh();
+}
+
+export type AddQuestState = { error?: string; added?: boolean } | null;
+
+const QUEST_TYPES = ["learn", "practice", "create", "boss"] as const;
+
+/** Adds a quest you wrote yourself to today's list, in the current world. */
+export async function addQuest(_prev: AddQuestState, form: FormData): Promise<AddQuestState> {
+  const goal = getActiveGoal();
+  if (!goal) return { error: "There's no goal yet." };
+
+  const title = String(form.get("title") ?? "").trim().slice(0, 120);
+  const instructions = String(form.get("instructions") ?? "").trim().slice(0, 400) || null;
+  const estMinutes = Number(form.get("estMinutes"));
+  const type = QUEST_TYPES.find((t) => t === form.get("type"));
+  if (!title) return { error: "Give the quest a name." };
+  if (!Number.isInteger(estMinutes) || estMinutes < 5 || estMinutes > 240) {
+    return { error: "Minutes should be a whole number between 5 and 240." };
+  }
+  if (!type) return { error: "Pick a quest type." };
+
+  const world = db
+    .select()
+    .from(phases)
+    .where(and(eq(phases.goalId, goal.id), eq(phases.status, "current")))
+    .get();
+  if (!world) return { error: "There's no current world. Add one on the Roadmap first." };
+
+  const today = localDate();
+  const position = countQuestsOn(goal.id, today) + 1;
+  db.insert(quests).values({ phaseId: world.id, date: today, position, title, instructions, estMinutes, type }).run();
+  refresh();
+  return { added: true };
 }

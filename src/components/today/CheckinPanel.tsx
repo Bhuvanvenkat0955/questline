@@ -5,6 +5,7 @@
 // these answers to size the day's quests.
 
 import clsx from "clsx";
+import Link from "next/link";
 import { BatteryFull, BatteryLow, BatteryMedium, Pencil } from "pixelarticons/react";
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
@@ -24,9 +25,11 @@ type CheckinPanelProps = {
   checkin: Checkin | null;
   /** The goal's usual minutes per day, used as the starting value. */
   defaultMinutes: number;
+  /** Name of the AI that plans the day, or null when planning by hand. */
+  planner: string | null;
 };
 
-export function CheckinPanel({ checkin, defaultMinutes }: CheckinPanelProps) {
+export function CheckinPanel({ checkin, defaultMinutes, planner }: CheckinPanelProps) {
   const [editing, setEditing] = useState(false);
 
   if (checkin && !editing) {
@@ -54,6 +57,7 @@ export function CheckinPanel({ checkin, defaultMinutes }: CheckinPanelProps) {
     <CheckinForm
       checkin={checkin}
       defaultMinutes={defaultMinutes}
+      planner={planner}
       onSaved={() => setEditing(false)}
       onCancel={checkin ? () => setEditing(false) : undefined}
     />
@@ -63,13 +67,14 @@ export function CheckinPanel({ checkin, defaultMinutes }: CheckinPanelProps) {
 function CheckinForm({
   checkin,
   defaultMinutes,
+  planner,
   onSaved,
   onCancel,
 }: CheckinPanelProps & { onSaved: () => void; onCancel?: () => void }) {
   const [minutes, setMinutes] = useState(checkin?.minutesAvailable ?? defaultMinutes);
 
   // The first check-in of the day also asks the AI to plan, which can take a while.
-  const willPlan = !checkin;
+  const willPlan = !checkin && planner !== null;
 
   // useActionState runs the Server Action and keeps its result (an error
   // message or null) plus a `pending` flag while it's saving.
@@ -177,7 +182,7 @@ function CheckinForm({
         </PixelButton>
         {pending && willPlan && (
           <p role="status" className="text-sm text-text-dim">
-            Claude is planning today&apos;s quests. This can take up to a minute.
+            {planner} is planning today&apos;s quests. This can take up to a minute.
           </p>
         )}
         {onCancel && (
@@ -186,6 +191,12 @@ function CheckinForm({
           </PixelButton>
         )}
       </div>
+      <p className="text-xs text-text-dim">
+        {planner ? `Planning with ${planner}.` : "AI planning is off: you'll add today's quests yourself."}{" "}
+        <Link href="/settings" className="underline underline-offset-2 hover:text-text">
+          Change in Settings
+        </Link>
+      </p>
     </form>
   );
 }

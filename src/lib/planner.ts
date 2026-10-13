@@ -43,8 +43,6 @@ const WORLDS_SCHEMA = {
   properties: {
     worlds: {
       type: "array",
-      minItems: 3,
-      maxItems: 7,
       items: {
         type: "object",
         properties: { title: { type: "string" }, doneCriteria: { type: "string" } },
@@ -124,7 +122,6 @@ const DAY_SCHEMA = {
     carryOverIds: { type: "array", items: { type: "integer" } },
     quests: {
       type: "array",
-      maxItems: 4,
       items: {
         type: "object",
         properties: {

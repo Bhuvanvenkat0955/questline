@@ -15,6 +15,13 @@
       "when": 1791897547329,
       "tag": "0001_ai_planning",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791899065905,
+      "tag": "0002_settings",
+      "breakpoints": true
     }
   ]
 }

@@ -24,7 +24,7 @@ export function PlanTodayButton() {
       </PixelButton>
       {pending && (
         <p role="status" className="text-sm text-text-dim">
-          Claude is planning today&apos;s quests. This can take up to a minute.
+          Planning today&apos;s quests. This can take up to a minute.
         </p>
       )}
       {state?.error && (

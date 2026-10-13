@@ -3,6 +3,7 @@
 // The intake form for a new goal. Its answers are everything the AI knows
 // when it writes the worlds, and the starting point is reused every morning.
 
+import Link from "next/link";
 import { useActionState, type ReactNode } from "react";
 import { createGoal } from "@/app/(app)/goals/new/actions";
 import { PixelButton } from "@/components/ui/PixelButton";
@@ -10,7 +11,7 @@ import { PixelButton } from "@/components/ui/PixelButton";
 const inputClass =
   "border-2 border-line bg-ink px-3 text-sm text-text placeholder:text-text-dim/60 focus:border-cyan focus:outline-none";
 
-export function NewGoalForm({ currentGoal }: { currentGoal: string | null }) {
+export function NewGoalForm({ currentGoal, planner }: { currentGoal: string | null; planner: string | null }) {
   const [state, action, pending] = useActionState(createGoal, null);
 
   return (
@@ -53,14 +54,22 @@ export function NewGoalForm({ currentGoal }: { currentGoal: string | null }) {
 
       <div className="flex flex-wrap items-center gap-4">
         <PixelButton type="submit" color="green" size="lg" disabled={pending}>
-          {pending ? "Mapping your worlds..." : "Create quest line"}
+          {pending ? (planner ? "Mapping your worlds..." : "Creating...") : "Create quest line"}
         </PixelButton>
-        {pending && (
+        {pending && planner && (
           <p role="status" className="text-sm text-text-dim">
-            Claude is writing your worlds. This can take up to a minute.
+            {planner} is writing your worlds. This can take up to a minute.
           </p>
         )}
       </div>
+      <p className="text-xs text-text-dim">
+        {planner
+          ? `${planner} will write your worlds.`
+          : "AI planning is off: you'll add worlds yourself on the Roadmap."}{" "}
+        <Link href="/settings" className="underline underline-offset-2 hover:text-text">
+          Change in Settings
+        </Link>
+      </p>
     </form>
   );
 }

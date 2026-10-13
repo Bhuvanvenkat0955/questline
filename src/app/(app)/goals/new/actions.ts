@@ -7,6 +7,7 @@ import { goals, phases } from "@/db/schema";
 import { AiError } from "@/lib/ai";
 import { planWorlds } from "@/lib/planner";
 import { localDate } from "@/lib/progress";
+import { aiEnabled } from "@/lib/settings";
 import { getActiveGoal } from "@/lib/today";
 
 export type NewGoalState = { error?: string } | null;
@@ -32,10 +33,11 @@ export async function createGoal(_prev: NewGoalState, form: FormData): Promise<N
     return { error: "Tick the box to confirm replacing your current quest line." };
   }
 
-  let worlds;
+  // With no AI, the goal starts with an empty map and you add worlds by hand.
+  let worlds: Awaited<ReturnType<typeof planWorlds>> = [];
   try {
-    // The slow part: Claude writes the worlds.
-    worlds = await planWorlds({ title, description, startingPoint, dailyMinutes, targetDate, today });
+    // The slow part: the AI writes the worlds.
+    if (aiEnabled()) worlds = await planWorlds({ title, description, startingPoint, dailyMinutes, targetDate, today });
   } catch (error) {
     if (error instanceof AiError) return { error: error.message };
     console.error(error);
@@ -50,6 +52,7 @@ export async function createGoal(_prev: NewGoalState, form: FormData): Promise<N
       .values({ title, description, startingPoint, dailyMinutes, targetDate })
       .returning()
       .get();
+    if (worlds.length === 0) return;
     tx.insert(phases)
       .values(worlds.map((w, i) => ({ ...w, goalId: goal.id, position: i + 1, status: i === 0 ? ("current" as const) : ("upcoming" as const) })))
       .run();

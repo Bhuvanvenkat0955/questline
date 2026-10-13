@@ -97,6 +97,15 @@ export const checkins = sqliteTable(
   (t) => [uniqueIndex("checkins_goal_date").on(t.goalId, t.date)],
 );
 
+/**
+ * App settings as simple key/value pairs, e.g. which AI plans your days.
+ * Lives only in your local database file, like everything else.
+ */
+export const settings = sqliteTable("settings", {
+  key: text().primaryKey(),
+  value: text().notNull(),
+});
+
 // Row types, e.g. `Quest` is what you get back when you read a quest.
 export type Goal = typeof goals.$inferSelect;
 export type Phase = typeof phases.$inferSelect;

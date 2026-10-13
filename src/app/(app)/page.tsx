@@ -3,11 +3,13 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Checkbox, Crown, Fire, Message, Trophy, Zap } from "pixelarticons/react";
 import { CheckinPanel } from "@/components/today/CheckinPanel";
+import { AddQuest } from "@/components/today/AddQuest";
 import { PlanTodayButton } from "@/components/today/PlanTodayButton";
 import { QuestCard } from "@/components/today/QuestCard";
 import { StatTile } from "@/components/ui/StatTile";
 import { XPBar } from "@/components/ui/XPBar";
 import { dayLabel, localDate, questXp } from "@/lib/progress";
+import { getSettings, PROVIDER_LABELS } from "@/lib/settings";
 import { getTodayView, type TodayView } from "@/lib/today";
 
 // The Today screen: the home page of Questline.
@@ -33,6 +35,8 @@ async function Today() {
   const view = getTodayView(today);
   if (!view) return <NoGoal />;
 
+  const { aiProvider } = getSettings();
+  const planner = aiProvider === "none" ? null : PROVIDER_LABELS[aiProvider];
   const dateLabel = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
 
   return (
@@ -49,8 +53,8 @@ async function Today() {
 
       <div className="flex flex-col gap-8 px-6 py-8 sm:px-10">
         <Stats view={view} />
-        <CheckinPanel checkin={view.checkin} defaultMinutes={view.goal.dailyMinutes} />
-        {view.checkin && <TodayQuests view={view} today={today} />}
+        <CheckinPanel checkin={view.checkin} defaultMinutes={view.goal.dailyMinutes} planner={planner} />
+        {view.checkin && <TodayQuests view={view} today={today} aiOn={planner !== null} />}
         {view.missed.length > 0 && <MissedQuests view={view} today={today} />}
       </div>
     </>
@@ -76,7 +80,7 @@ function Stats({ view }: { view: TodayView }) {
   );
 }
 
-function TodayQuests({ view, today }: { view: TodayView; today: string }) {
+function TodayQuests({ view, today, aiOn }: { view: TodayView; today: string; aiOn: boolean }) {
   const { quests } = view;
   const done = quests.filter((q) => q.status === "done").length;
   const minutes = quests.reduce((sum, q) => sum + q.estMinutes, 0);
@@ -113,13 +117,11 @@ function TodayQuests({ view, today }: { view: TodayView; today: string }) {
         </div>
       )}
 
-      {quests.length === 0 ? (
-        <PlanTodayButton />
-      ) : (
-        quests.map((q) => (
-          <QuestCard key={q.id} quest={q} xp={questXp(q)} missedFrom={q.date < today ? dayLabel(q.date, today) : undefined} />
-        ))
-      )}
+      {quests.length === 0 && (aiOn ? <PlanTodayButton /> : <AddQuest startOpen />)}
+      {quests.map((q) => (
+        <QuestCard key={q.id} quest={q} xp={questXp(q)} missedFrom={q.date < today ? dayLabel(q.date, today) : undefined} />
+      ))}
+      {quests.length > 0 && <AddQuest />}
     </section>
   );
 }

@@ -12,7 +12,7 @@ that fit that day's circumstances.
 - [x] **Step 5 — App shell + Roadmap screen:** sidebar nav + player card, worlds map with quest logs, edit / add / reorder / delete / clear worlds
 - [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [x] **Step 7 — Progress page:** stat tiles, 16-week streak calendar, XP-over-time chart with level lines, daily log table
-- [ ] **Step 8 — Public release:** bring-your-own-AI providers in Settings, manual planning for no-AI users, setup guide in README
+- [x] **Step 8 — Public release:** Settings with bring-your-own-AI (Claude Code / Claude API key / Ollama / none) + Test connection, goal settings, "add your own quest" for manual planning, setup guide in README
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
@@ -75,7 +75,8 @@ src/
       roadmap/actions.ts  # Server Actions: edit / add / move / delete / clear worlds
       goals/new/page.tsx  # New goal + AI worlds preview (step 6)
       progress/page.tsx   # Progress screen (/progress)
-      settings/page.tsx   # (step 8)
+      settings/page.tsx   # Settings screen (/settings)
+      settings/actions.ts # Server Actions: save AI settings, test connection, edit goal
   db/
     schema.ts             # Drizzle tables
     index.ts              # SQLite connection, runs migrations on startup
@@ -85,7 +86,10 @@ src/
     today.ts              # reads everything the Today screen shows
     roadmap.ts            # reads worlds + quest logs for the Roadmap
     history.ts            # stats, calendar weeks and XP line for Progress
-    ai.ts                 # runs `claude -p`, prompts + JSON schemas (only file that knows how AI is called)
+    ai.ts                 # HOW the AI is reached: Claude Code CLI, Claude API, Ollama (only file that knows)
+    planner.ts            # WHAT is asked: prompts, answer schemas, validation
+    dayPlan.ts            # gathers a day's context and saves the plan
+    settings.ts           # key/value settings: AI provider, API key, models
   components/
     ui/                   # PixelButton, PixelCard, StatTile, XPBar
     today/                # CheckinPanel, QuestCard, quest type styles
@@ -135,7 +139,8 @@ their own AI access, chosen in **Settings**:
 | None | anyone | free; plan worlds/quests by hand in Roadmap |
 
 Rules:
-- `src/lib/ai.ts` picks the provider; every provider returns the same JSON shape.
+- `src/lib/ai.ts` picks the provider from the `settings` table; every provider returns the same JSON shape.
+- Claude API calls use `claude-opus-5-5`, structured output (`output_config.format`) and `fallbacks: "default"`.
 - An API key is saved only on that person's PC (`.env.local` or the local DB), never in the repo.
 - README presents the API key and Ollama as the main supported options; Claude Code login is "if you already use it" (Anthropic recommends API keys for apps).
 - Never host Questline as a public website with the owner's key or login: strangers' usage would be billed to the owner.
