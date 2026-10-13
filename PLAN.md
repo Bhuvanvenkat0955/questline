@@ -10,7 +10,7 @@ that fit that day's circumstances.
 - [x] **Step 3 — Database:** SQLite tables (goals, worlds, daily quests, check-ins), XP/level/streak rules, test seed data
 - [ ] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
 - [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, worlds map with past quests, edit worlds
-- [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (needs API key)
+- [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
 
 ## Decisions
@@ -18,6 +18,7 @@ that fit that day's circumstances.
 - **Goals:** anything the user defines; nothing in the app is specific to one kind of goal
 - **Planning:** Claude writes the worlds once per goal, then plans quests fresh each day from that day's check-in + history (no quests pre-written for future days)
 - **Storage:** local-first SQLite file, no account/login
+- **AI access:** no paid API. The server runs the installed Claude Code CLI in headless mode (`claude -p ... --output-format json --json-schema ...`), which uses the user's Claude subscription. Personal use on this PC only; all AI calls go through `src/lib/ai.ts` so it can later swap to the Claude API or a local model (Ollama).
 
 ## Core loop
 1. Create a goal → answer intake questions (current level, minutes/day, deadline, tools).
@@ -49,15 +50,15 @@ DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [
 2. **Today** — check-in, then the day's quest checklist (home screen)
 3. **Roadmap** — worlds (done / current / upcoming) with past quests under each; edit worlds
 4. **Progress** — streak, heatmap, stats
-5. **Settings** — goal settings, daily minutes, API key
+5. **Settings** — goal settings, daily minutes
 
 ## Tech stack
 - **Next.js + TypeScript + Tailwind** running on `localhost` (open in browser)
   - can be wrapped as a real desktop window later with Tauri/Electron
 - **SQLite** via Drizzle ORM (`data/app.db`)
-- **Claude API** (`@anthropic-ai/sdk`) for roadmap generation + adaptation,
-  using structured JSON output so worlds and daily quests save straight to the DB
-- API key kept in `.env.local` (never committed)
+- **Claude Code CLI (headless)** for planning worlds and daily quests, using the
+  user's subscription (no API key); `--json-schema` gives structured JSON output
+  so worlds and quests save straight to the DB
 
 ## Folder structure
 ```
@@ -68,16 +69,13 @@ src/
     roadmap/page.tsx      # Roadmap view/edit
     progress/page.tsx     # Streak + heatmap
     settings/page.tsx
-    api/
-      generate-roadmap/route.ts
-      adapt-plan/route.ts
   db/
     schema.ts             # Drizzle tables
     index.ts              # SQLite connection, runs migrations on startup
     seed.ts               # test data: one goal, a few days of quests
   lib/
     progress.ts           # streak / % calculations
-    ai.ts                 # Claude prompts + response parsing
+    ai.ts                 # runs `claude -p`, prompts + JSON schemas (only file that knows how AI is called)
   components/             # TaskCard, Checklist, PhaseList, Heatmap...
 drizzle/                  # generated SQL migrations (committed)
 data/app.db               # local database (gitignored)
