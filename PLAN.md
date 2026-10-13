@@ -10,7 +10,7 @@ that fit that day's circumstances.
 - [x] **Step 3 — Database:** SQLite tables (goals, worlds, daily quests, check-ins), XP/level/streak rules, test seed data
 - [x] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
 - [x] **Step 5 — App shell + Roadmap screen:** sidebar nav + player card, worlds map with quest logs, edit / add / reorder / delete / clear worlds
-- [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
+- [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
 - [ ] **Step 8 — Public release:** bring-your-own-AI providers in Settings, manual planning for no-AI users, setup guide in README
 
