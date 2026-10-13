@@ -46,3 +46,6 @@ next-env.d.ts
 # AI agent skills (third-party, restorable from skills-lock.json)
 /.agents/
 /.claude/skills/
+
+# Claude Code personal settings (local permissions, never share)
+.claude/settings.local.json
