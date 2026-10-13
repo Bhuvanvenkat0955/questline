@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* Questline palette: dark panels, cream hero, saturated category colors.
+   Every bright color has a darker "-deep" partner used for hard pixel shadows. */
+:root {
+  --ink: #0b0b0d;
+  --panel: #15151a;
+  --panel-raised: #1d1d24;
+  --line: #2c2c35;
+  --cream: #f3ecdb;
+  --cream-deep: #d9cfb6;
+  --text: #f3ecdb;
+  --text-dim: #a3a093;
+  --text-ink: #121212;
+
+  --red: #e8402f;
+  --red-deep: #8e1f15;
+  --cyan: #3ec8ea;
+  --cyan-deep: #16708a;
+  --yellow: #f7c535;
+  --yellow-deep: #98720d;
+  --green: #3cc24a;
+  --green-deep: #1c7426;
+  --blue: #2f6fe4;
+  --blue-deep: #173d88;
+  --purple: #8b4ded;
+  --purple-deep: #4a2196;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-panel: var(--panel);
+  --color-panel-raised: var(--panel-raised);
+  --color-line: var(--line);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-ink: var(--text-ink);
+
+  --color-red: var(--red);
+  --color-red-deep: var(--red-deep);
+  --color-cyan: var(--cyan);
+  --color-cyan-deep: var(--cyan-deep);
+  --color-yellow: var(--yellow);
+  --color-yellow-deep: var(--yellow-deep);
+  --color-green: var(--green);
+  --color-green-deep: var(--green-deep);
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-purple: var(--purple);
+  --color-purple-deep: var(--purple-deep);
+
+  --font-display: var(--font-silkscreen);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-sans: var(--font-jetbrains-mono);
+
+  --radius-pixel: 2px;
+}
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* Hard, unblurred offset shadow. Set --shadow-color on the element. */
+@utility shadow-pixel {
+  box-shadow: 4px 4px 0 0 var(--shadow-color, var(--ink));
+}
+
+/* Faint pixel grid used on cream surfaces, like the reference hero. */
+@utility bg-pixel-grid {
+  background-color: var(--cream);
+  background-image: radial-gradient(var(--cream-deep) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+svg.pixel-icon,
+img.pixel {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+::selection {
+  background: var(--yellow);
+  color: var(--text-ink);
+}
