@@ -1,7 +1,16 @@
-# Goal Tracker — Plan
+# Questline — Plan
 
 Turn a big goal (e.g. "become a clipper") into a roadmap of small daily tasks,
 check them off each day, and unlock the next ones as you progress.
+
+## Progress
+- [x] **Step 1 — Project setup:** Next.js + Tailwind, libraries, pixel fonts, palette
+- [x] **Step 2 — Pixel components:** PixelButton, PixelCard, StatTile, XPBar, `/kit` showcase
+- [ ] **Step 3 — Database:** SQLite tables (goals, phases, quests, check-ins), XP/level rules, sample clipper quest line
+- [ ] **Step 4 — Today screen:** daily checklist that saves, earns XP, updates streak, unlocks next quest
+- [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, phases view, edit/reorder quests
+- [ ] **Step 6 — Create goal with AI:** intake form + Claude-generated roadmap (needs API key)
+- [ ] **Step 7 — Progress page:** streak calendar, XP over time
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
