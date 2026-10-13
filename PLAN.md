@@ -12,6 +12,7 @@ that fit that day's circumstances.
 - [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, worlds map with past quests, edit worlds
 - [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
+- [ ] **Step 8 — Public release:** bring-your-own-AI providers in Settings, manual planning for no-AI users, setup guide in README
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
@@ -106,3 +107,22 @@ Reference: "Blockcraft"-style retro pixel look.
 - **v1 (MVP):** one goal, AI worlds + daily AI quests from check-in, Today checklist, streak
 - **v2:** smarter replanning from feedback, desktop reminders, multiple goals
 - **v3:** stats dashboard, proof links, weekly review, desktop app wrapper
+
+## Public release — bring your own AI
+When the repo goes public, nobody uses the owner's login or usage. Each person
+clones the repo and runs Questline on their own PC with their own database and
+their own AI access, chosen in **Settings**:
+
+| Provider | For | Cost to them |
+|---|---|---|
+| Claude Code login | already have a Claude subscription + Claude Code installed | included in their plan |
+| Anthropic API key | no subscription | pay per use (~$1–2/month) |
+| Ollama (local model) | free and offline; needs a decent PC | free |
+| None | anyone | free; plan worlds/quests by hand in Roadmap |
+
+Rules:
+- `src/lib/ai.ts` picks the provider; every provider returns the same JSON shape.
+- An API key is saved only on that person's PC (`.env.local` or the local DB), never in the repo.
+- README presents the API key and Ollama as the main supported options; Claude Code login is "if you already use it" (Anthropic recommends API keys for apps).
+- Never host Questline as a public website with the owner's key or login: strangers' usage would be billed to the owner.
+- Before publishing: re-scan full git history for secrets, and consider switching the commit email to GitHub's noreply address.
