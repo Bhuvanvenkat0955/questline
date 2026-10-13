@@ -6,7 +6,7 @@ check them off each day, and unlock the next ones as you progress.
 ## Progress
 - [x] **Step 1 — Project setup:** Next.js + Tailwind, libraries, pixel fonts, palette
 - [x] **Step 2 — Pixel components:** PixelButton, PixelCard, StatTile, XPBar, `/kit` showcase
-- [ ] **Step 3 — Database:** SQLite tables (goals, phases, quests, check-ins), XP/level rules, sample clipper quest line
+- [x] **Step 3 — Database:** SQLite tables (goals, phases, quests, check-ins), XP/level rules, sample clipper quest line
 - [ ] **Step 4 — Today screen:** daily checklist that saves, earns XP, updates streak, unlocks next quest
 - [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, phases view, edit/reorder quests
 - [ ] **Step 6 — Create goal with AI:** intake form + Claude-generated roadmap (needs API key)
@@ -28,12 +28,18 @@ check them off each day, and unlock the next ones as you progress.
 ## Data model
 | Table | Key fields |
 |---|---|
-| `goals` | id, title, description, daily_minutes, target_date, status, created_at |
-| `phases` | id, goal_id, order, title, done_criteria |
-| `tasks` | id, phase_id, order, title, instructions, est_minutes, type (learn/practice/build/publish), status (locked/today/done/skipped), scheduled_date, completed_at, feedback |
-| `checkins` | id, goal_id, date, note, proof_link, mood/difficulty |
+| `goals` | id, title, description, daily_minutes, target_date, status (active/completed/archived), created_at |
+| `phases` | id, goal_id, position, title, done_criteria |
+| `quests` | id, phase_id, position, title, instructions, est_minutes, type (learn/practice/build/publish), status (locked/active/done/skipped), completed_on, feedback (too_easy/just_right/too_hard) |
+| `checkins` | id, goal_id, date (one per goal per day), note, proof_link, difficulty (easy/ok/hard) |
 
-Streaks and progress % are computed from `tasks` + `checkins`, not stored.
+Dates are local `YYYY-MM-DD` text. Missed quests just stay `active`, so they roll over.
+XP, level and streak are computed from `quests` in `src/lib/progress.ts`, not stored:
+- quest XP = est_minutes + type bonus (learn 10, practice 15, build 20, publish 30)
+- level 1→2 costs 100 XP, each next level costs 50 more
+- streak = days in a row with ≥1 finished quest (today counts once done)
+
+DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [-- --reset]`, `npm run db:studio`.
 
 ## Screens
 1. **New Goal** — intake form → preview/edit generated roadmap → start
@@ -64,12 +70,14 @@ src/
       adapt-plan/route.ts
   db/
     schema.ts             # Drizzle tables
-    index.ts              # SQLite connection
+    index.ts              # SQLite connection, runs migrations on startup
+    seed.ts               # sample "Become a clipper" quest line
   lib/
     scheduler.ts          # picks today's tasks, rollover, unlock logic
     progress.ts           # streak / % calculations
     ai.ts                 # Claude prompts + response parsing
   components/             # TaskCard, Checklist, PhaseList, Heatmap...
+drizzle/                  # generated SQL migrations (committed)
 data/app.db               # local database (gitignored)
 ```
 
