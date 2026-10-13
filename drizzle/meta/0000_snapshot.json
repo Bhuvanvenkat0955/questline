@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "42f44dfb-07a6-474a-bca4-127269f52606",
+  "id": "fe3992f1-b113-4e46-9c81-9b479023af5a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "checkins": {
@@ -28,22 +28,22 @@
           "notNull": true,
           "autoincrement": false
         },
+        "minutes_available": {
+          "name": "minutes_available",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "energy": {
+          "name": "energy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "note": {
           "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "proof_link": {
-          "name": "proof_link",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "difficulty": {
-          "name": "difficulty",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -176,6 +176,21 @@
           "name": "done_criteria",
           "type": "text",
           "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'upcoming'"
+        },
+        "completed_on": {
+          "name": "completed_on",
+          "type": "text",
+          "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         }
@@ -213,6 +228,13 @@
         "phase_id": {
           "name": "phase_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -258,7 +280,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'locked'"
+          "default": "'todo'"
         },
         "completed_on": {
           "name": "completed_on",

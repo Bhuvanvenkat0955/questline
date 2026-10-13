@@ -5,12 +5,12 @@
 
 import type { QuestType } from "@/db/schema";
 
-/** Flat bonus per quest type. Shipping work you'd rather hide pays the most. */
+/** Flat bonus per quest type. Boss quests prove real progress, so they pay the most. */
 export const TYPE_BONUS: Record<QuestType, number> = {
   learn: 10,
   practice: 15,
-  build: 20,
-  publish: 30,
+  create: 20,
+  boss: 40,
 };
 
 /** XP for finishing one quest: 1 XP per minute plus the type bonus. */

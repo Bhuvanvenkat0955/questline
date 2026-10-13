@@ -1,50 +1,53 @@
 # Questline — Plan
 
-Turn a big goal (e.g. "become a clipper") into a roadmap of small daily tasks,
-check them off each day, and unlock the next ones as you progress.
+Turn any big goal the user types in (run a marathon, learn Spanish, become a
+clipper...) into a map of worlds, then get fresh AI-planned quests every day
+that fit that day's circumstances.
 
 ## Progress
 - [x] **Step 1 — Project setup:** Next.js + Tailwind, libraries, pixel fonts, palette
 - [x] **Step 2 — Pixel components:** PixelButton, PixelCard, StatTile, XPBar, `/kit` showcase
-- [x] **Step 3 — Database:** SQLite tables (goals, phases, quests, check-ins), XP/level rules, sample clipper quest line
-- [ ] **Step 4 — Today screen:** daily checklist that saves, earns XP, updates streak, unlocks next quest
-- [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, phases view, edit/reorder quests
-- [ ] **Step 6 — Create goal with AI:** intake form + Claude-generated roadmap (needs API key)
+- [x] **Step 3 — Database:** SQLite tables (goals, worlds, daily quests, check-ins), XP/level/streak rules, test seed data
+- [ ] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
+- [ ] **Step 5 — App shell + Roadmap screen:** sidebar nav, worlds map with past quests, edit worlds
+- [ ] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (needs API key)
 - [ ] **Step 7 — Progress page:** streak calendar, XP over time
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
-- **Tasks:** AI-generated roadmap via Claude API, fully editable
+- **Goals:** anything the user defines; nothing in the app is specific to one kind of goal
+- **Planning:** Claude writes the worlds once per goal, then plans quests fresh each day from that day's check-in + history (no quests pre-written for future days)
 - **Storage:** local-first SQLite file, no account/login
 
 ## Core loop
 1. Create a goal → answer intake questions (current level, minutes/day, deadline, tools).
-2. Claude generates a roadmap: Phases → ordered Tasks (each sized to fit the daily budget).
-3. **Today** screen shows 1–3 tasks that fit your time budget → check them off.
-4. Completing today's tasks unlocks the next ones. Missed tasks roll over (no pile-up).
-5. Progress: streak, % of current phase, % of goal, calendar heatmap.
-6. Feedback ("too easy / too hard / skipped") lets Claude adjust upcoming tasks.
+2. Claude writes the **worlds**: ordered milestones, each with a "done when..." line. This is the roadmap.
+3. Each day starts with a **check-in**: minutes available today, energy, anything going on.
+4. Claude reads the check-in + current world + recent quests/feedback and writes **today's quests** to fit.
+5. Check quests off → XP, level, streak. Leftover quests count as missed; the AI sees them when planning tomorrow.
+6. When the current world's "done when..." is met (often via a boss quest), the next world becomes current.
+7. Feedback ("too easy / too hard") shapes the next day's plan.
 
 ## Data model
 | Table | Key fields |
 |---|---|
 | `goals` | id, title, description, daily_minutes, target_date, status (active/completed/archived), created_at |
-| `phases` | id, goal_id, position, title, done_criteria |
-| `quests` | id, phase_id, position, title, instructions, est_minutes, type (learn/practice/build/publish), status (locked/active/done/skipped), completed_on, feedback (too_easy/just_right/too_hard) |
-| `checkins` | id, goal_id, date (one per goal per day), note, proof_link, difficulty (easy/ok/hard) |
+| `phases` (worlds) | id, goal_id, position, title, done_criteria, status (upcoming/current/done), completed_on |
+| `quests` | id, phase_id, date, position, title, instructions, est_minutes, type (learn/practice/create/boss), status (todo/done/skipped), completed_on, feedback (too_easy/just_right/too_hard) |
+| `checkins` | id, goal_id, date (one per goal per day), minutes_available, energy (low/ok/high), note |
 
-Dates are local `YYYY-MM-DD` text. Missed quests just stay `active`, so they roll over.
+Dates are local `YYYY-MM-DD` text. A `todo` quest from an earlier date counts as missed.
 XP, level and streak are computed from `quests` in `src/lib/progress.ts`, not stored:
-- quest XP = est_minutes + type bonus (learn 10, practice 15, build 20, publish 30)
+- quest XP = est_minutes + type bonus (learn 10, practice 15, create 20, boss 40)
 - level 1→2 costs 100 XP, each next level costs 50 more
 - streak = days in a row with ≥1 finished quest (today counts once done)
 
 DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [-- --reset]`, `npm run db:studio`.
 
 ## Screens
-1. **New Goal** — intake form → preview/edit generated roadmap → start
-2. **Today** — the daily checklist (home screen)
-3. **Roadmap** — phases with done / current / locked tasks; edit, reorder, add
+1. **New Goal** — intake form → preview/edit the AI's worlds → start
+2. **Today** — check-in, then the day's quest checklist (home screen)
+3. **Roadmap** — worlds (done / current / upcoming) with past quests under each; edit worlds
 4. **Progress** — streak, heatmap, stats
 5. **Settings** — goal settings, daily minutes, API key
 
@@ -53,7 +56,7 @@ DB commands: `npm run db:generate` (after editing schema.ts), `npm run db:seed [
   - can be wrapped as a real desktop window later with Tauri/Electron
 - **SQLite** via Drizzle ORM (`data/app.db`)
 - **Claude API** (`@anthropic-ai/sdk`) for roadmap generation + adaptation,
-  using structured JSON output so phases/tasks save straight to the DB
+  using structured JSON output so worlds and daily quests save straight to the DB
 - API key kept in `.env.local` (never committed)
 
 ## Folder structure
@@ -71,9 +74,8 @@ src/
   db/
     schema.ts             # Drizzle tables
     index.ts              # SQLite connection, runs migrations on startup
-    seed.ts               # sample "Become a clipper" quest line
+    seed.ts               # test data: one goal, a few days of quests
   lib/
-    scheduler.ts          # picks today's tasks, rollover, unlock logic
     progress.ts           # streak / % calculations
     ai.ts                 # Claude prompts + response parsing
   components/             # TaskCard, Checklist, PhaseList, Heatmap...
@@ -98,11 +100,11 @@ Reference: "Blockcraft"-style retro pixel look.
 | Dialogs, menus, tooltips (accessible primitives) | base-ui |
 | Shared app state (XP, level, today's tasks) | zustand |
 | Pixel button/card variants (red/cyan/yellow…) | cva + clsx |
-| Reordering roadmap tasks | dnd kit |
+| Reordering worlds / today's quests | dnd kit |
 | Progress page charts | recharts |
 | Pixel fonts + pixel icons *(not on curated list)* | Google Fonts pixel font + pixelarticons |
 
 ## Milestones
-- **v1 (MVP):** one goal, AI roadmap + edit, Today checklist, unlock next, streak
-- **v2:** adaptive replanning from feedback, desktop reminders, multiple goals
+- **v1 (MVP):** one goal, AI worlds + daily AI quests from check-in, Today checklist, streak
+- **v2:** smarter replanning from feedback, desktop reminders, multiple goals
 - **v3:** stats dashboard, proof links, weekly review, desktop app wrapper

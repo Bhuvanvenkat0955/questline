@@ -2,9 +2,9 @@ CREATE TABLE `checkins` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`goal_id` integer NOT NULL,
 	`date` text NOT NULL,
+	`minutes_available` integer NOT NULL,
+	`energy` text NOT NULL,
 	`note` text,
-	`proof_link` text,
-	`difficulty` text,
 	FOREIGN KEY (`goal_id`) REFERENCES `goals`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -24,19 +24,22 @@ CREATE TABLE `phases` (
 	`goal_id` integer NOT NULL,
 	`position` integer NOT NULL,
 	`title` text NOT NULL,
-	`done_criteria` text,
+	`done_criteria` text NOT NULL,
+	`status` text DEFAULT 'upcoming' NOT NULL,
+	`completed_on` text,
 	FOREIGN KEY (`goal_id`) REFERENCES `goals`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `quests` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`phase_id` integer NOT NULL,
+	`date` text NOT NULL,
 	`position` integer NOT NULL,
 	`title` text NOT NULL,
 	`instructions` text,
 	`est_minutes` integer NOT NULL,
 	`type` text NOT NULL,
-	`status` text DEFAULT 'locked' NOT NULL,
+	`status` text DEFAULT 'todo' NOT NULL,
 	`completed_on` text,
 	`feedback` text,
 	FOREIGN KEY (`phase_id`) REFERENCES `phases`(`id`) ON UPDATE no action ON DELETE cascade

@@ -2,25 +2,31 @@
 // Drizzle reads this file to create the SQL tables (via `npm run db:generate`)
 // and to give queries full TypeScript types.
 //
+// Nothing here is about one kind of goal: the goal, its worlds and every quest
+// are written by the AI for whatever the user wants to achieve.
+//
 // Dates are stored as plain "YYYY-MM-DD" text in your local time zone, so
 // "the day I did this quest" never shifts because of UTC conversions.
 
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-/** A quest line: the big goal, e.g. "Become a clipper". */
+/** A quest line: the big goal the user typed in. */
 export const goals = sqliteTable("goals", {
   id: integer().primaryKey({ autoIncrement: true }),
   title: text().notNull(),
   description: text(),
-  /** How many minutes a day you can spend on this goal. */
+  /** Usual minutes per day. A day's check-in can override it. */
   dailyMinutes: integer().notNull().default(30),
   targetDate: text(),
   status: text({ enum: ["active", "completed", "archived"] }).notNull().default("active"),
   createdAt: text().notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
-/** A world inside a quest line, e.g. "World 1: Learn the editor". */
+/**
+ * A world: one big milestone on the way to the goal. The AI writes all of a
+ * goal's worlds when the goal is created, so the roadmap is visible from day 1.
+ */
 export const phases = sqliteTable("phases", {
   id: integer().primaryKey({ autoIncrement: true }),
   goalId: integer()
@@ -29,35 +35,48 @@ export const phases = sqliteTable("phases", {
   /** Order inside the goal: 1, 2, 3... */
   position: integer().notNull(),
   title: text().notNull(),
-  /** What "finished with this world" means, in plain words. */
-  doneCriteria: text(),
+  /** What "finished with this world" means. The AI checks progress against it. */
+  doneCriteria: text().notNull(),
+  /** upcoming – not reached yet, current – the world you're in, done – cleared */
+  status: text({ enum: ["upcoming", "current", "done"] }).notNull().default("upcoming"),
+  completedOn: text(),
 });
 
-/** One small task you can finish in a single sitting. */
+/**
+ * One small task for one day. The AI writes a day's quests fresh each morning,
+ * using that day's check-in and everything done so far, so future quests
+ * don't exist until their day comes.
+ */
 export const quests = sqliteTable("quests", {
   id: integer().primaryKey({ autoIncrement: true }),
   phaseId: integer()
     .notNull()
     .references(() => phases.id, { onDelete: "cascade" }),
-  /** Order inside the phase: 1, 2, 3... */
+  /** The day this quest was planned for, "YYYY-MM-DD". */
+  date: text().notNull(),
+  /** Order within that day's list: 1, 2, 3... */
   position: integer().notNull(),
   title: text().notNull(),
   instructions: text(),
   estMinutes: integer().notNull(),
-  type: text({ enum: ["learn", "practice", "build", "publish"] }).notNull(),
   /**
-   * locked  – not reachable yet
-   * active  – unlocked and waiting to be done (missed ones simply stay active)
-   * done    – finished, earns XP
-   * skipped – passed over on purpose, earns nothing
+   * learn    – take in knowledge
+   * practice – repeat a skill
+   * create   – make something
+   * boss     – a milestone that proves progress in this world
    */
-  status: text({ enum: ["locked", "active", "done", "skipped"] }).notNull().default("locked"),
+  type: text({ enum: ["learn", "practice", "create", "boss"] }).notNull(),
+  /** A `todo` left over from an earlier day counts as missed. */
+  status: text({ enum: ["todo", "done", "skipped"] }).notNull().default("todo"),
   /** Local date the quest was finished, "YYYY-MM-DD". */
   completedOn: text(),
   feedback: text({ enum: ["too_easy", "just_right", "too_hard"] }),
 });
 
-/** A note about one day of work on a goal. At most one per goal per day. */
+/**
+ * The start-of-day check-in: today's circumstances, which the AI reads
+ * before planning the day's quests. At most one per goal per day.
+ */
 export const checkins = sqliteTable(
   "checkins",
   {
@@ -66,9 +85,10 @@ export const checkins = sqliteTable(
       .notNull()
       .references(() => goals.id, { onDelete: "cascade" }),
     date: text().notNull(),
+    minutesAvailable: integer().notNull(),
+    energy: text({ enum: ["low", "ok", "high"] }).notNull(),
+    /** Anything else that matters today, e.g. "travelling", "exam tomorrow". */
     note: text(),
-    proofLink: text(),
-    difficulty: text({ enum: ["easy", "ok", "hard"] }),
   },
   (t) => [uniqueIndex("checkins_goal_date").on(t.goalId, t.date)],
 );
