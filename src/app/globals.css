@@ -25,6 +25,14 @@
   --blue-deep: #173d88;
   --purple: #8b4ded;
   --purple-deep: #4a2196;
+
+  /* Activity heatmap: one green hue, brighter = more quests that day.
+     Checked with the dataviz validator (monotone lightness, visible steps). */
+  --heat-0: var(--panel-raised);
+  --heat-1: #1f5a28;
+  --heat-2: #26802f;
+  --heat-3: #31a13d;
+  --heat-4: #3cc24a;
 }
 
 @theme inline {
@@ -50,6 +58,11 @@
   --color-blue-deep: var(--blue-deep);
   --color-purple: var(--purple);
   --color-purple-deep: var(--purple-deep);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
 
   --font-display: var(--font-silkscreen);
   --font-mono: var(--font-jetbrains-mono);

@@ -74,3 +74,15 @@ export function currentStreak(doneDays: Iterable<string>, today = localDate()): 
   }
   return streak;
 }
+
+/** The longest run of days in a row with at least one finished quest, ever. */
+export function bestStreak(doneDays: Iterable<string>): number {
+  const days = [...new Set(doneDays)].sort();
+  let best = 0;
+  let run = 0;
+  days.forEach((day, i) => {
+    run = i > 0 && addDays(days[i - 1], 1) === day ? run + 1 : 1;
+    best = Math.max(best, run);
+  });
+  return best;
+}

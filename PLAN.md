@@ -11,7 +11,7 @@ that fit that day's circumstances.
 - [x] **Step 4 — Today screen:** daily check-in form + today's quest checklist that saves, earns XP, updates streak
 - [x] **Step 5 — App shell + Roadmap screen:** sidebar nav + player card, worlds map with quest logs, edit / add / reorder / delete / clear worlds
 - [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
-- [ ] **Step 7 — Progress page:** streak calendar, XP over time
+- [x] **Step 7 — Progress page:** stat tiles, 16-week streak calendar, XP-over-time chart with level lines, daily log table
 - [ ] **Step 8 — Public release:** bring-your-own-AI providers in Settings, manual planning for no-AI users, setup guide in README
 
 ## Decisions
@@ -74,7 +74,7 @@ src/
       roadmap/page.tsx    # Roadmap screen (/roadmap)
       roadmap/actions.ts  # Server Actions: edit / add / move / delete / clear worlds
       goals/new/page.tsx  # New goal + AI worlds preview (step 6)
-      progress/page.tsx   # Streak + heatmap (step 7)
+      progress/page.tsx   # Progress screen (/progress)
       settings/page.tsx   # (step 8)
   db/
     schema.ts             # Drizzle tables
@@ -84,11 +84,13 @@ src/
     progress.ts           # XP / level / streak rules (pure math)
     today.ts              # reads everything the Today screen shows
     roadmap.ts            # reads worlds + quest logs for the Roadmap
+    history.ts            # stats, calendar weeks and XP line for Progress
     ai.ts                 # runs `claude -p`, prompts + JSON schemas (only file that knows how AI is called)
   components/
     ui/                   # PixelButton, PixelCard, StatTile, XPBar
     today/                # CheckinPanel, QuestCard, quest type styles
     roadmap/              # WorldCard, WorldForm, AddWorld, QuestLog
+    progress/             # ActivityCalendar, XpChart
     shell/                # Sidebar, NavLinks
 drizzle/                  # generated SQL migrations (committed)
 data/app.db               # local database (gitignored)
