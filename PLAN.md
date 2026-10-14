@@ -13,6 +13,7 @@ that fit that day's circumstances.
 - [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [x] **Step 7 — Progress page:** stat tiles, 16-week streak calendar, XP-over-time chart with level lines, daily log table
 - [x] **Step 8 — Public release:** Settings with bring-your-own-AI (Claude Code / Claude API key / Ollama / none) + Test connection, goal settings, "add your own quest" for manual planning, setup guide in README
+- [ ] **Step 9 — Screen time:** opt-in background tracker (foreground app + idle), Time page with labels, focus ratio and evening "Depends" review
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
@@ -125,6 +126,21 @@ Reference: "Blockcraft"-style retro pixel look.
 - **v1 (MVP):** one goal, AI worlds + daily AI quests from check-in, Today checklist, streak
 - **v2:** smarter replanning from feedback, desktop reminders, multiple goals
 - **v3:** stats dashboard, proof links, weekly review, desktop app wrapper
+
+## Screen time tracking (step 9)
+Shows where time actually goes on this PC, next to the quests (where you want it to go).
+
+**Decisions (2026-10-14):**
+- Our own tracker, Windows first: a small background program (`npm run tracker`) that every ~5 s
+  asks Windows which app is in front and whether anyone is at the keyboard/mouse (idle > 2 min = not counted).
+- Detail: **app names only**, plus the **site name for browsers** ("YouTube", "Instagram") taken from the
+  window title. The rest of the title (video/page names) is discarded immediately and never saved.
+- Labels you set per app/site: Productive / Neutral / Distracting / **Depends** (e.g. YouTube: learning or doomscrolling).
+- "Depends" time gets an **evening slider**: "1h 40m on YouTube today. How much was useful?"
+- Opt-in, local only (data/app.db), pause anytime. Other people's copies only ever track their own PC.
+- Stored as per-day, per-hour totals per app, not a raw log.
+
+**Later options (not chosen yet):** link goal-related apps to the goal's progress; AI weekly insights.
 
 ## Public release — bring your own AI
 When the repo goes public, nobody uses the owner's login or usage. Each person
