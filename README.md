@@ -50,6 +50,20 @@ Questline, then open it from the Start menu or the desktop shortcut.
   `npm run dev`, which uses `data/`). Uninstalling never deletes it.
 - To try the desktop app without installing: `npm run app:start`.
 
+## Screen time (Windows)
+
+The **Time** page shows where your computer time goes. Press **Start tracking**
+there (or right-click the tray icon). Every few seconds Questline notes which
+app is in front, and for browsers only the site's name (e.g. "YouTube").
+Window and page titles are never saved, and idle time (2+ minutes without
+keyboard or mouse) isn't counted.
+
+Label each app or site as Productive, Neutral, Distracting or **Depends**
+(for things like YouTube that can be learning or scrolling). Depends time gets
+a quick end-of-day question: how much of it was useful? That decides your
+focus score. Tracking stays on until you pause it, and only ever records this
+computer, into your local database.
+
 ## Choose how Questline plans
 
 Questline doesn't come with an AI account. You connect your own in

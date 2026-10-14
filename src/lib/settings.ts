@@ -22,6 +22,8 @@ export type Settings = {
   anthropicModel: string;
   ollamaUrl: string;
   ollamaModel: string;
+  /** Screen-time tracking: on only after you press Start. */
+  trackerEnabled: "true" | "false";
 };
 
 const DEFAULTS: Settings = {
@@ -30,6 +32,7 @@ const DEFAULTS: Settings = {
   anthropicModel: "claude-opus-5-5",
   ollamaUrl: "http://localhost:11434",
   ollamaModel: "qwen3:8b",
+  trackerEnabled: "false",
 };
 
 export function getSettings(): Settings {

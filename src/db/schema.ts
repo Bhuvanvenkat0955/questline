@@ -9,7 +9,7 @@
 // "the day I did this quest" never shifts because of UTC conversions.
 
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /** A quest line: the big goal the user typed in. */
 export const goals = sqliteTable("goals", {
@@ -106,9 +106,53 @@ export const settings = sqliteTable("settings", {
   value: text().notNull(),
 });
 
+/**
+ * Screen time: how many seconds were spent in each app or website, per hour.
+ * Only totals are kept, never a minute-by-minute log, and for websites only
+ * the site's name ("YouTube"), never page or video titles.
+ */
+export const usage = sqliteTable(
+  "usage",
+  {
+    /** Local day, "YYYY-MM-DD". */
+    date: text().notNull(),
+    /** Hour of the day, 0–23. */
+    hour: integer().notNull(),
+    kind: text({ enum: ["app", "site"] }).notNull(),
+    name: text().notNull(),
+    seconds: integer().notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.date, t.hour, t.kind, t.name] })],
+);
+
+/** How you've labelled each app or site. Unlabelled ones simply have no row. */
+export const activityLabels = sqliteTable(
+  "activity_labels",
+  {
+    kind: text({ enum: ["app", "site"] }).notNull(),
+    name: text().notNull(),
+    label: text({ enum: ["productive", "neutral", "distracting", "depends"] }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.kind, t.name] })],
+);
+
+/** The evening answer for a "Depends" app: how much of that day's time was useful. */
+export const dependsReviews = sqliteTable(
+  "depends_reviews",
+  {
+    date: text().notNull(),
+    kind: text({ enum: ["app", "site"] }).notNull(),
+    name: text().notNull(),
+    /** 0–100: the share of the time that was useful. */
+    usefulPercent: integer().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.date, t.kind, t.name] })],
+);
+
 // Row types, e.g. `Quest` is what you get back when you read a quest.
 export type Goal = typeof goals.$inferSelect;
 export type Phase = typeof phases.$inferSelect;
 export type Quest = typeof quests.$inferSelect;
 export type Checkin = typeof checkins.$inferSelect;
 export type QuestType = Quest["type"];
+export type ActivityLabel = (typeof activityLabels.$inferSelect)["label"];

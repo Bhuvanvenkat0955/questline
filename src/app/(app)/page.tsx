@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { Checkbox, Crown, Fire, Message, Trophy, Zap } from "pixelarticons/react";
+import { Checkbox, Clock, Crown, Fire, Message, Trophy, Zap } from "pixelarticons/react";
 import { CheckinPanel } from "@/components/today/CheckinPanel";
 import { GoalHeading } from "@/components/ui/GoalHeading";
 import { AddQuest } from "@/components/today/AddQuest";
@@ -10,6 +10,7 @@ import { QuestCard } from "@/components/today/QuestCard";
 import { StatTile } from "@/components/ui/StatTile";
 import { XPBar } from "@/components/ui/XPBar";
 import { dayLabel, localDate, questXp } from "@/lib/progress";
+import { needsReview } from "@/lib/screenTime";
 import { getSettings, PROVIDER_LABELS } from "@/lib/settings";
 import { getTodayView, type TodayView } from "@/lib/today";
 
@@ -53,6 +54,19 @@ async function Today() {
       </section>
 
       <div className="flex flex-col gap-8 px-6 py-8 sm:px-10">
+        {/* Evening nudge: answer how useful today's "Depends" screen time was. */}
+        {new Date().getHours() >= 18 && needsReview(today) && (
+          <Link
+            href="/time#review"
+            className="flex items-center gap-3 border-2 border-yellow bg-panel p-4 text-sm hover:bg-panel-raised focus-visible:outline-2 focus-visible:outline-yellow [&_svg]:size-5"
+          >
+            <Clock className="shrink-0 text-yellow" aria-hidden="true" />
+            <span>
+              <span className="font-display text-xs text-yellow uppercase">End-of-day review · </span>
+              How much of today&apos;s &ldquo;Depends&rdquo; screen time was useful? It takes a few seconds.
+            </span>
+          </Link>
+        )}
         <Stats view={view} />
         <CheckinPanel checkin={view.checkin} defaultMinutes={view.goal.dailyMinutes} planner={planner} />
         {view.checkin && <TodayQuests view={view} today={today} aiOn={planner !== null} />}

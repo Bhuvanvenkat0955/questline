@@ -181,14 +181,47 @@ function createWindow() {
 function createTray() {
   tray = new Tray(nativeImage.createFromPath(trayIcon));
   tray.setToolTip("Questline");
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: "Open Questline", click: showWindow },
-      { type: "separator" },
-      { label: "Quit Questline", click: quit },
-    ]),
-  );
   tray.on("click", showWindow);
+  // The menu is built fresh on each right-click, so it shows whether tracking is on.
+  tray.on("right-click", async () => {
+    const tracking = await trackerApi();
+    tray?.setToolTip(tracking?.state === "tracking" ? "Questline · tracking screen time" : "Questline");
+    tray?.popUpContextMenu(
+      Menu.buildFromTemplate([
+        { label: "Open Questline", click: showWindow },
+        { type: "separator" },
+        tracking?.state === "tracking"
+          ? { label: "Pause screen-time tracking", click: () => setTracking(false) }
+          : { label: "Start screen-time tracking", click: () => setTracking(true), enabled: tracking !== null && tracking.state !== "unsupported" },
+        { type: "separator" },
+        { label: "Quit Questline", click: quit },
+      ]),
+    );
+  });
+}
+
+type TrackerState = { state: "off" | "tracking" | "unsupported" | "error" };
+
+/** Asks Questline's server about the tracker (or changes it). null if the server isn't up yet. */
+async function trackerApi(tracking?: boolean): Promise<TrackerState | null> {
+  if (!appUrl) return null;
+  try {
+    const res = await fetch(`${appUrl}/api/tracker`, {
+      method: tracking === undefined ? "GET" : "POST",
+      // The server only accepts tracker requests carrying this header.
+      headers: { "x-questline": "1", "content-type": "application/json" },
+      body: tracking === undefined ? undefined : JSON.stringify({ tracking }),
+    });
+    return res.ok ? ((await res.json()) as TrackerState) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function setTracking(on: boolean) {
+  await trackerApi(on);
+  // If the Time page is open, reload it so it shows the new state.
+  if (win?.webContents.getURL().includes("/time")) win.webContents.reload();
 }
 
 function showWindow() {

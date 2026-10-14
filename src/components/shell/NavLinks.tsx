@@ -6,12 +6,13 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartLine, Checkbox, Map, Plus, SlidersHorizontal } from "pixelarticons/react";
+import { ChartLine, Checkbox, Clock, Map, Plus, SlidersHorizontal } from "pixelarticons/react";
 
 const links = [
   { href: "/", label: "Today", icon: <Checkbox /> },
   { href: "/roadmap", label: "Roadmap", icon: <Map /> },
   { href: "/progress", label: "Progress", icon: <ChartLine /> },
+  { href: "/time", label: "Time", icon: <Clock /> },
   { href: "/goals/new", label: "New goal", icon: <Plus /> },
   { href: "/settings", label: "Settings", icon: <SlidersHorizontal /> },
 ];
