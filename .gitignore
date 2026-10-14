@@ -49,3 +49,8 @@ next-env.d.ts
 
 # Claude Code personal settings (local permissions, never share)
 .claude/settings.local.json
+
+# desktop app build output
+/dist-electron/
+/desktop-build/
+/desktop-dist/

@@ -12,8 +12,10 @@ import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
 
-const DB_FILE = path.join(process.cwd(), "data", "app.db");
-const MIGRATIONS_DIR = path.join(process.cwd(), "drizzle");
+// The desktop app passes its own folders (your Windows user data folder and
+// the installed migrations); `npm run dev` uses the project folder.
+const DB_FILE = path.join(process.env.QUESTLINE_DATA_DIR || path.join(process.cwd(), "data"), "app.db");
+const MIGRATIONS_DIR = process.env.QUESTLINE_MIGRATIONS_DIR || path.join(process.cwd(), "drizzle");
 
 function openConnection() {
   fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });

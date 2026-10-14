@@ -1,0 +1,29 @@
+# How `npm run app:dist` packages Questline into a Windows installer.
+appId: io.github.bhuvanvenkat0955.questline
+productName: Questline
+directories:
+  output: desktop-dist      # where the installer ends up
+  buildResources: build     # icon.png lives here
+# The app itself is just the compiled main process; the server ships separately below.
+files:
+  - dist-electron/**/*
+  - package.json
+  - "!node_modules/**/*"
+extraResources:
+  - from: desktop-build/server   # the standalone Next.js server (made by app:build:server)
+    to: server
+  - from: electron/tray.png
+    to: tray.png
+# better-sqlite3 uses Node's stable add-on interface, so its ready-made binary
+# works inside Electron as-is: nothing needs rebuilding.
+npmRebuild: false
+win:
+  target: nsis
+  icon: build/icon.png
+nsis:
+  oneClick: false                         # show the normal "choose where to install" steps
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Questline
+  deleteAppDataOnUninstall: false         # uninstalling never deletes your goals and progress
