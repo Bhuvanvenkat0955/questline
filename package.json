@@ -58,5 +58,6 @@
   },
   "productName": "Questline",
   "main": "dist-electron/main.cjs",
-  "description": "Turn any big goal into a game: worlds to clear and daily quests that fit your day."
+  "description": "Turn any big goal into a game: worlds to clear and daily quests that fit your day.",
+  "author": "V. BHUVAN VENKAT"
 }

@@ -30,6 +30,26 @@ Open <http://localhost:3000>, then:
 Want to look around first? `npm run db:seed` loads a sample goal with a few
 days of history.
 
+## Install it as a desktop app (Windows)
+
+Questline can run as a normal program, with its own window and a tray icon,
+and no terminal or browser needed:
+
+```bash
+npm run app:dist
+```
+
+This builds `desktop-dist/Questline Setup 0.1.0.exe`. Run it to install
+Questline, then open it from the Start menu or the desktop shortcut.
+
+- Windows may say **"Windows protected your PC"** because the app isn't
+  code-signed. Click **More info → Run anyway**.
+- Closing the window keeps Questline running in the tray by the clock.
+  Right-click the tray icon → **Quit Questline** to close it fully.
+- The desktop app keeps its data in `%APPDATA%\Questline` (separate from
+  `npm run dev`, which uses `data/`). Uninstalling never deletes it.
+- To try the desktop app without installing: `npm run app:start`.
+
 ## Choose how Questline plans
 
 Questline doesn't come with an AI account. You connect your own in

@@ -9,9 +9,10 @@ files:
   - dist-electron/**/*
   - package.json
   - "!node_modules/**/*"
+# The server (desktop-build/server) is copied in by scripts/after-pack.cjs instead,
+# because electron-builder's resource copying leaves out its node_modules.
+afterPack: scripts/after-pack.cjs
 extraResources:
-  - from: desktop-build/server   # the standalone Next.js server (made by app:build:server)
-    to: server
   - from: electron/tray.png
     to: tray.png
 # better-sqlite3 uses Node's stable add-on interface, so its ready-made binary

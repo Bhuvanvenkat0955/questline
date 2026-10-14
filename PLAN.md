@@ -13,7 +13,7 @@ that fit that day's circumstances.
 - [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [x] **Step 7 — Progress page:** stat tiles, 16-week streak calendar, XP-over-time chart with level lines, daily log table
 - [x] **Step 8 — Public release:** Settings with bring-your-own-AI (Claude Code / Claude API key / Ollama / none) + Test connection, goal settings, "add your own quest" for manual planning, setup guide in README
-- [ ] **Step 9 — Desktop app:** Electron wrapper: Questline.exe installer, own window (no terminal/browser), tray icon
+- [x] **Step 9 — Desktop app:** Electron app: Questline Setup.exe installer, own window (no terminal/browser), tray icon, data in %APPDATA%\Questline
 - [ ] **Step 10 — Screen time:** tracker built into the desktop app (Start / Pause / Stop in the window and tray), Time page with labels, focus ratio and evening "Depends" review
 
 ## Decisions
