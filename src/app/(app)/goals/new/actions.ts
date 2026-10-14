@@ -7,6 +7,7 @@ import { goals, phases } from "@/db/schema";
 import { AiError } from "@/lib/ai";
 import { planWorlds } from "@/lib/planner";
 import { localDate } from "@/lib/progress";
+import { GOAL_TITLE_MAX } from "@/lib/limits";
 import { aiEnabled } from "@/lib/settings";
 import { getActiveGoal } from "@/lib/today";
 
@@ -15,7 +16,8 @@ export type NewGoalState = { error?: string } | null;
 /** Reads the intake form, has the AI write the worlds, then saves everything. */
 export async function createGoal(_prev: NewGoalState, form: FormData): Promise<NewGoalState> {
   const field = (name: string, max: number) => String(form.get(name) ?? "").trim().slice(0, max) || null;
-  const title = field("title", 80);
+  // One tidy line: line breaks and double spaces become single spaces.
+  const title = field("title", GOAL_TITLE_MAX)?.replace(/\s+/g, " ") ?? null;
   const description = field("description", 500);
   const startingPoint = field("startingPoint", 500);
   const dailyMinutes = Number(form.get("dailyMinutes"));

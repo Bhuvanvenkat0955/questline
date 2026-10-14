@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AddWorld } from "@/components/roadmap/AddWorld";
 import { QuestLog } from "@/components/roadmap/QuestLog";
 import { WorldCard } from "@/components/roadmap/WorldCard";
+import { GoalHeading } from "@/components/ui/GoalHeading";
 import { dayLabel, localDate } from "@/lib/progress";
 import { getRoadmapView } from "@/lib/roadmap";
 
@@ -38,7 +39,7 @@ async function Roadmap() {
     <>
       <section className="bg-pixel-grid px-6 py-10 text-text-ink sm:px-10">
         <p className="font-display text-xs uppercase">Roadmap</p>
-        <h1 className="mt-3 font-display text-4xl leading-none font-bold uppercase sm:text-5xl">{goal.title}</h1>
+        <GoalHeading title={goal.title} />
         {goal.description && <p className="mt-3 max-w-2xl text-sm">{goal.description}</p>}
         <p className="mt-4 font-display text-xs uppercase tabular-nums">
           {view.worldsCleared} of {worlds.length} worlds cleared · {view.questsDone} quests done · {view.totalXp} XP

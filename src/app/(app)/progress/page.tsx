@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Calendar, Checkbox, Fire, Flag, Trophy, Zap } from "pixelarticons/react";
 import { ActivityCalendar } from "@/components/progress/ActivityCalendar";
 import { XpChart } from "@/components/progress/XpChart";
+import { GoalHeading } from "@/components/ui/GoalHeading";
 import { StatTile } from "@/components/ui/StatTile";
 import { getProgressView } from "@/lib/history";
 import { dayLabel, localDate } from "@/lib/progress";
@@ -38,7 +39,7 @@ async function Progress() {
     <>
       <section className="bg-pixel-grid px-6 py-10 text-text-ink sm:px-10">
         <p className="font-display text-xs uppercase">Progress</p>
-        <h1 className="mt-3 font-display text-4xl leading-none font-bold uppercase sm:text-5xl">{goal.title}</h1>
+        <GoalHeading title={goal.title} />
         <p className="mt-3 text-sm">
           Level {stats.level} · {stats.worldsCleared} of {stats.worldCount} worlds cleared
         </p>

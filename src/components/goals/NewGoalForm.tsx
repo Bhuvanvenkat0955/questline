@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useActionState, type ReactNode } from "react";
 import { createGoal } from "@/app/(app)/goals/new/actions";
 import { PixelButton } from "@/components/ui/PixelButton";
+import { GoalTitleInput } from "./GoalTitleInput";
 
 const inputClass =
   "border-2 border-line bg-ink px-3 text-sm text-text placeholder:text-text-dim/60 focus:border-cyan focus:outline-none";
@@ -16,8 +17,8 @@ export function NewGoalForm({ currentGoal, planner }: { currentGoal: string | nu
 
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-6">
-      <Field label="Your goal" hint="One line. Anything you want to achieve.">
-        <input name="title" required maxLength={80} placeholder="e.g. Run a half marathon" className={`h-11 ${inputClass}`} />
+      <Field label="Your goal" hint="Anything you want to achieve, in a sentence or two.">
+        <GoalTitleInput placeholder="e.g. Become a freelance web developer building online shops and portfolio sites" className={inputClass} />
       </Field>
 
       <Field label="Why it matters" hint="Optional. Helps the plan aim at what you actually want.">

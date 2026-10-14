@@ -6,6 +6,7 @@
 import { useActionState } from "react";
 import { saveGoalSettings } from "@/app/(app)/settings/actions";
 import { PixelButton } from "@/components/ui/PixelButton";
+import { GoalTitleInput } from "@/components/goals/GoalTitleInput";
 import type { Goal } from "@/db/schema";
 
 const inputClass =
@@ -18,7 +19,7 @@ export function GoalSettingsForm({ goal }: { goal: Goal }) {
     <form action={action} className="flex max-w-2xl flex-col gap-5">
       <label className="flex flex-col gap-2">
         <span className="font-display text-xs uppercase">Goal</span>
-        <input name="title" required maxLength={80} defaultValue={goal.title} className={`h-11 ${inputClass}`} />
+        <GoalTitleInput defaultValue={goal.title} className={inputClass} />
       </label>
       <label className="flex flex-col gap-2">
         <span className="font-display text-xs uppercase">Why it matters</span>

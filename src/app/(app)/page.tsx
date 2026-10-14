@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Checkbox, Crown, Fire, Message, Trophy, Zap } from "pixelarticons/react";
 import { CheckinPanel } from "@/components/today/CheckinPanel";
+import { GoalHeading } from "@/components/ui/GoalHeading";
 import { AddQuest } from "@/components/today/AddQuest";
 import { PlanTodayButton } from "@/components/today/PlanTodayButton";
 import { QuestCard } from "@/components/today/QuestCard";
@@ -47,7 +48,7 @@ async function Today() {
             ? `World ${view.world.position} of ${view.worldCount} · ${view.world.title}`
             : "All worlds cleared"}
         </p>
-        <h1 className="mt-3 font-display text-4xl leading-none font-bold uppercase sm:text-5xl">{view.goal.title}</h1>
+        <GoalHeading title={view.goal.title} />
         <p className="mt-3 text-sm">{dateLabel}</p>
       </section>
 

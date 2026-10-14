@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { goals } from "@/db/schema";
 import { AiError, askAi } from "@/lib/ai";
 import { localDate } from "@/lib/progress";
+import { GOAL_TITLE_MAX } from "@/lib/limits";
 import { AI_PROVIDERS, getSettings, saveSettings, type Settings } from "@/lib/settings";
 import { getActiveGoal } from "@/lib/today";
 
@@ -94,7 +95,8 @@ export async function saveGoalSettings(_prev: FormState, form: FormData): Promis
   if (!goal) return { error: "There's no goal yet." };
 
   const field = (name: string, max: number) => String(form.get(name) ?? "").trim().slice(0, max) || null;
-  const title = field("title", 80);
+  // One tidy line: line breaks and double spaces become single spaces.
+  const title = field("title", GOAL_TITLE_MAX)?.replace(/\s+/g, " ") ?? null;
   const dailyMinutes = Number(form.get("dailyMinutes"));
   const targetDate = field("targetDate", 10);
 
