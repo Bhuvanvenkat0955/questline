@@ -13,7 +13,8 @@ that fit that day's circumstances.
 - [x] **Step 6 — AI planning:** new-goal intake → Claude writes the worlds; each day's check-in → Claude writes that day's quests (via Claude Code headless, on the user's subscription)
 - [x] **Step 7 — Progress page:** stat tiles, 16-week streak calendar, XP-over-time chart with level lines, daily log table
 - [x] **Step 8 — Public release:** Settings with bring-your-own-AI (Claude Code / Claude API key / Ollama / none) + Test connection, goal settings, "add your own quest" for manual planning, setup guide in README
-- [ ] **Step 9 — Screen time:** opt-in background tracker (foreground app + idle), Time page with labels, focus ratio and evening "Depends" review
+- [ ] **Step 9 — Desktop app:** Electron wrapper: Questline.exe installer, own window (no terminal/browser), tray icon
+- [ ] **Step 10 — Screen time:** tracker built into the desktop app (Start / Pause / Stop in the window and tray), Time page with labels, focus ratio and evening "Depends" review
 
 ## Decisions
 - **Platform:** desktop only (runs locally on this PC)
@@ -125,13 +126,13 @@ Reference: "Blockcraft"-style retro pixel look.
 ## Milestones
 - **v1 (MVP):** one goal, AI worlds + daily AI quests from check-in, Today checklist, streak
 - **v2:** smarter replanning from feedback, desktop reminders, multiple goals
-- **v3:** stats dashboard, proof links, weekly review, desktop app wrapper
+- **v3:** stats dashboard, proof links, weekly review
 
-## Screen time tracking (step 9)
+## Screen time tracking (step 10)
 Shows where time actually goes on this PC, next to the quests (where you want it to go).
 
 **Decisions (2026-10-14):**
-- Our own tracker, Windows first: a small background program (`npm run tracker`) that every ~5 s
+- Our own tracker, Windows first, running inside the desktop app (started/paused from the Time page or tray) that every ~5 s
   asks Windows which app is in front and whether anyone is at the keyboard/mouse (idle > 2 min = not counted).
 - Detail: **app names only**, plus the **site name for browsers** ("YouTube", "Instagram") taken from the
   window title. The rest of the title (video/page names) is discarded immediately and never saved.
@@ -141,6 +142,14 @@ Shows where time actually goes on this PC, next to the quests (where you want it
 - Stored as per-day, per-hour totals per app, not a raw log.
 
 **Later options (not chosen yet):** link goal-related apps to the goal's progress; AI weekly insights.
+
+## Desktop app (step 9)
+**Decision (2026-10-14):** Electron, built before the tracker so the tracker lives inside it.
+- Why Electron over Tauri: Questline's server side is all Node (Next.js, better-sqlite3, the `claude` CLI,
+  the tracker); Electron bundles Node, Tauri would need a separate Node sidecar.
+- The app starts the Next.js server itself and opens it in its own window; a tray icon keeps it running
+  in the background (needed for tracking). Installer via electron-builder → Questline.exe.
+- Auto-start at login: optional, asked separately (lasting change to the PC).
 
 ## Public release — bring your own AI
 When the repo goes public, nobody uses the owner's login or usage. Each person
